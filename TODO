@@ -1,0 +1,5 @@
+1. draft section, recurse after new plan_discover on current draft
+    review = draft_section(working summery = current draft, knowledge chunks = plan.newchunks)
+
+2. Generate structure if no template
+3. Pass structure to section drafter to indicate drafting map
