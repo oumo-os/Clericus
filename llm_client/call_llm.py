@@ -26,21 +26,21 @@ import backoff
 from utils.logging import log_info, log_error
 
 # ---------------------------------------------------------------------------
-# Config
+# Config  (resolved at call time — app_config > env vars > defaults)
 # ---------------------------------------------------------------------------
 
-# NOTE: LLM_BACKEND is intentionally NOT read here at module level.
-# call_llm() reads os.getenv() at call time so that cli.py can set
-# os.environ["LLM_BACKEND"] after argument parsing and have it take effect.
 _DEFAULT_BACKEND = "ollama"
 
-OPENAI_API_KEY    = os.getenv("OPENAI_API_KEY", "")
-ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
-GEMINI_API_KEY    = os.getenv("GEMINI_API_KEY", "")
-
-LOCAL_LLM_PATH  = os.getenv("LOCAL_LLM_PATH", "./models/ggml-model.bin")
-OLLAMA_API_URL  = os.getenv("OLLAMA_API_URL", "http://localhost:11434")
-OLLAMA_MODEL    = os.getenv("OLLAMA_MODEL", "llama3.2")
+def _cfg(key: str, default: str = "") -> str:
+    """Resolve a config value: app_config > env var > default."""
+    try:
+        from utils.app_config import config as _app_cfg
+        val = _app_cfg.get(key, "")
+        if val and str(val).strip():
+            return str(val)
+    except Exception:
+        pass
+    return os.environ.get(key.upper(), default)
 
 # ---------------------------------------------------------------------------
 # Public entry point
@@ -64,7 +64,7 @@ def call_llm(
     Returns:
         Parsed JSON object (if parse_json=True) or raw response string.
     """
-    backend = kwargs.pop("backend", os.getenv("LLM_BACKEND", _DEFAULT_BACKEND).lower())
+    backend = kwargs.pop("backend", _cfg("llm_backend", os.getenv("LLM_BACKEND", _DEFAULT_BACKEND)).lower())
     dispatch = {
         "openai":    _call_openai,
         "anthropic": _call_anthropic,
@@ -114,8 +114,8 @@ def extract_json_block(text: str) -> str | None:
 @backoff.on_exception(backoff.expo, Exception, max_tries=3, jitter=backoff.full_jitter)
 def _call_openai(prompt: str, parse_json: bool, max_retries: int, **kwargs) -> Any:
     from openai import OpenAI
-    client = OpenAI(api_key=OPENAI_API_KEY)
-    model = kwargs.get("model", "gpt-4o")
+    client = OpenAI(api_key=_cfg("openai_api_key"))
+    model = kwargs.get("model", _cfg("openai_model", "gpt-4o"))
     response = client.chat.completions.create(
         model=model,
         messages=[{"role": "user", "content": prompt}],
@@ -137,8 +137,8 @@ def _call_openai(prompt: str, parse_json: bool, max_retries: int, **kwargs) -> A
 @backoff.on_exception(backoff.expo, Exception, max_tries=3, jitter=backoff.full_jitter)
 def _call_anthropic(prompt: str, parse_json: bool, max_retries: int, **kwargs) -> Any:
     import anthropic
-    client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
-    model = kwargs.get("model", "claude-sonnet-4-6")
+    client = anthropic.Anthropic(api_key=_cfg("anthropic_api_key"))
+    model = kwargs.get("model", _cfg("anthropic_model", "claude-sonnet-4-6"))
     message = client.messages.create(
         model=model,
         max_tokens=kwargs.get("max_tokens", 4096),
@@ -160,8 +160,8 @@ def _call_anthropic(prompt: str, parse_json: bool, max_retries: int, **kwargs) -
 @backoff.on_exception(backoff.expo, Exception, max_tries=3, jitter=backoff.full_jitter)
 def _call_gemini(prompt: str, parse_json: bool, max_retries: int, **kwargs) -> Any:
     from google import genai
-    client = genai.Client(api_key=GEMINI_API_KEY)
-    model = kwargs.get("model", "gemini-2.0-flash")
+    client = genai.Client(api_key=_cfg("gemini_api_key"))
+    model = kwargs.get("model", _cfg("gemini_model", "gemini-2.0-flash"))
 
     gen_config: dict = {}
     if parse_json:
@@ -184,8 +184,8 @@ def _call_gemini(prompt: str, parse_json: bool, max_retries: int, **kwargs) -> A
 @backoff.on_exception(backoff.expo, Exception, max_tries=3, jitter=backoff.full_jitter)
 def _call_ollama(prompt: str, parse_json: bool, max_retries: int, **kwargs) -> Any:
     import requests as _requests
-    model = kwargs.get("model", OLLAMA_MODEL)
-    url = f"{OLLAMA_API_URL}/api/generate"
+    model = kwargs.get("model", _cfg("ollama_model", "llama3.2"))
+    url = f"{_cfg('ollama_url', 'http://localhost:11434')}/api/generate"
     payload: dict = {"model": model, "prompt": prompt, "stream": False}
     # Only request JSON-constrained output when the caller actually needs JSON.
     # Sending "format":"json" unconditionally was causing garbled plain-text outputs.
@@ -216,14 +216,14 @@ def _call_local(prompt: str, parse_json: bool, max_retries: int, **kwargs) -> An
     content: str = ""
     try:
         from llama_cpp import Llama   # package name is llama_cpp, not llamacpp
-        llm = Llama(model_path=LOCAL_LLM_PATH, n_ctx=4096)
+        llm = Llama(model_path=_cfg("local_model_path", "./models/ggml-model.bin"), n_ctx=4096)
         result = llm(prompt, **kwargs)
         content = result["choices"][0]["text"]
     except ImportError:
         # Fallback: invoke llama.cpp CLI binary
         try:
             proc = subprocess.Popen(
-                ["llama", "-m", LOCAL_LLM_PATH, "-p", prompt],
+                ["llama", "-m", _cfg("local_model_path", "./models/ggml-model.bin"), "-p", prompt],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,

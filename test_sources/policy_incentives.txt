@@ -1,0 +1,51 @@
+Policy Incentives for Renewable Energy Investment
+
+Author: Global Policy Research Center
+Year: 2022
+
+Governments across Sub-Saharan Africa have deployed a range of policy
+instruments to stimulate renewable energy investment. These fall into four
+broad categories: fiscal incentives, regulatory frameworks, direct finance
+mechanisms, and market design reforms.
+
+FISCAL INCENTIVES
+
+Import duty exemptions for solar panels, inverters, and batteries have been
+adopted in Kenya, Uganda, Rwanda, Tanzania, and Ghana. Kenya's exemption,
+introduced in 2014, is credited with accelerating the uptake of off-grid
+solar home systems to over 2.5 million units by 2021.
+
+Corporate tax holidays of five to ten years are offered to qualifying
+renewable energy projects in Ethiopia, Senegal, and Ivory Coast. Value-added
+tax (VAT) exemptions on renewable energy equipment are common across
+the region, reducing upfront capital costs by 15-20%.
+
+REGULATORY FRAMEWORKS
+
+Feed-in tariff (FiT) programs guarantee a fixed price for electricity
+fed into the national grid over a contract period, typically 15-25 years.
+South Africa's Renewable Energy Independent Power Producer Procurement
+Programme (REIPPPP) has contracted over 6,400 MW of renewable capacity
+since its launch in 2011, making it the continent's most successful
+competitive tender programme.
+
+Net metering regulations, adopted in South Africa, Kenya, and Namibia,
+allow residential and commercial users with rooftop solar to offset their
+electricity bills by feeding surplus power back to the grid.
+
+DIRECT FINANCE MECHANISMS
+
+Development finance institutions (DFIs) — including the International
+Finance Corporation, African Development Bank, and bilateral agencies —
+provide concessional loans, guarantees, and equity for renewable projects.
+Risk mitigation instruments such as the Multilateral Investment Guarantee
+Agency (MIGA) and Scaling Solar have been pivotal in reducing perceived
+investment risk in frontier markets.
+
+CHALLENGES AND GAPS
+
+Despite these mechanisms, several structural gaps persist. Grid connection
+delays average 18-36 months in many countries. Currency risk remains
+unmitigated in most markets. Small project size increases transaction costs
+relative to deal value. Standardised power purchase agreement (PPA) templates
+are absent in most jurisdictions outside South Africa.

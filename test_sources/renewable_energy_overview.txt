@@ -1,0 +1,35 @@
+Renewable Energy in Sub-Saharan Africa: An Overview
+
+Author: International Energy Research Institute
+Year: 2023
+
+Sub-Saharan Africa holds some of the world's largest untapped renewable energy
+resources. Solar irradiance across the Sahel averages 5-7 kWh/m2/day, among
+the highest globally. Wind resources along the East African Rift Valley and
+southern coastal zones are substantial, with mean speeds exceeding 7 m/s at
+hub height in the best sites.
+
+Current electricity access rates remain low. As of 2022, approximately 600
+million people in sub-Saharan Africa lacked access to electricity, representing
+roughly 43% of the global total of people without power. Rural electrification
+rates in countries such as Chad, Niger, and South Sudan remain below 5%.
+
+Solar photovoltaic (PV) costs have fallen dramatically over the past decade.
+Utility-scale solar PV levelised cost of electricity (LCOE) dropped from
+approximately $0.36/kWh in 2010 to under $0.05/kWh in 2022 for best-in-class
+projects. This cost reduction has made solar the cheapest source of new
+electricity generation in many African markets.
+
+Mini-grid systems powered by solar-battery or solar-diesel hybrid configurations
+are increasingly deployed in rural areas where grid extension is uneconomical.
+More than 3,000 mini-grids are operational across Africa, with concentrated
+deployment in Nigeria, Tanzania, Ethiopia, and Madagascar.
+
+Key barriers to renewable energy deployment include: limited access to
+long-term concessional finance; weak grid infrastructure; lack of bankable
+project pipelines; foreign exchange risk; and policy uncertainty.
+
+The African Development Bank's New Deal on Energy for Africa aims to achieve
+universal access by 2025 through a combination of grid extension, mini-grids,
+and stand-alone solar systems. Total investment required is estimated at
+$70 billion per year through 2030.
