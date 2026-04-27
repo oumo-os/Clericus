@@ -1,0 +1,11 @@
+# GUI server + desktop packaging dependencies
+# Install alongside requirements.txt:
+#   pip install -r requirements.txt -r requirements-gui.txt
+
+fastapi>=0.110.0
+uvicorn[standard]>=0.27.0
+python-multipart>=0.0.9
+pywebview>=5.0.0
+
+# Desktop packaging (install once to build, not needed at runtime)
+# pip install pyinstaller

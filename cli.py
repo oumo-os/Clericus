@@ -32,6 +32,7 @@ from template.analyze_template import (
     generate_structure_from_template,
 )
 from drafting.recursive_drafter import recursive_draft_section
+from contemplation.document_planner import plan_document
 from utils.logging import log_info, log_error
 
 logging.basicConfig(
@@ -183,7 +184,15 @@ def main() -> None:
         log_info(f"Building/loading index from '{args.source}'…")
         kb_index = build_or_load_index(args.source)
 
-        # 2. Generate document skeleton
+        # 2. Document-level planning pass
+        # Samples sources broadly, generates document questions, iterates discovery,
+        # and produces an enriched doc_summary that feeds the structure generator.
+        log_info("Running document-level planning pass…")
+        doc_plan = plan_document(args.instruction, kb_index)
+        enriched_instruction = doc_plan["doc_summary"]
+        log_info(f"Plan complete: {len(doc_plan['recommended_sections'])} recommended sections")
+
+        # 3. Generate document skeleton
         if args.templatefile and os.path.exists(args.templatefile):
             log_info(f"Deriving structure from template: {args.templatefile}")
             structure = generate_structure_from_template(
@@ -191,12 +200,21 @@ def main() -> None:
                 default_budget=config.DEFAULT_DOCUMENT_BUDGET,
             )
         else:
-            # NEW: use LLM structure generator instead of a bare single-node dict
             log_info("Generating document structure from instruction…")
-            structure = generate_structure_from_instruction(
-                instruction=args.instruction,
-                default_budget=config.DEFAULT_DOCUMENT_BUDGET,
-            )
+            # Pass recommended_sections as a hint when the planner found them
+            hint = doc_plan.get("recommended_sections")
+            if hint:
+                from template.analyze_template import _headings_to_tree
+                structure = _headings_to_tree(
+                    [enriched_instruction] + hint,
+                    config.DEFAULT_DOCUMENT_BUDGET,
+                )
+                structure["working_summary"] = enriched_instruction
+            else:
+                structure = generate_structure_from_instruction(
+                    instruction=enriched_instruction,
+                    default_budget=config.DEFAULT_DOCUMENT_BUDGET,
+                )
 
         log_info(
             f"Structure: '{structure.get('title')}' "
@@ -206,12 +224,14 @@ def main() -> None:
 
         # 3. Recursive drafting
         log_info("Recursively drafting document…")
-        force_redraft = args.reset_state  # if we cleared state, don't load stale cache
+        # force_redraft=True  → ignore cache, redraft everything
+        # --reset-state clears state then forces redraft; --resume always reuses cache
+        force_redraft = args.reset_state and not args.resume
         drafted = recursive_draft_section(
             node=structure,
             output_dir=args.output_dir,
             section_path="1",
-            doc_summary=args.instruction,
+            doc_summary=enriched_instruction,
             parent_summary="",
             kb_index=kb_index,
             level=args.max_depth,

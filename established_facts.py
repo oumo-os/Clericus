@@ -12,7 +12,7 @@ Persistence layout:
 import json
 import os
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -57,7 +57,7 @@ class EstablishedFactsBase:
     ) -> str:
         """Register a new fact and embed its description."""
         fact_id = str(uuid.uuid4())
-        now = datetime.utcnow()
+        now = datetime.now(timezone.utc)
         entry: Dict[str, Any] = {
             "fact_id": fact_id,
             "fact_type": fact_type or "general",

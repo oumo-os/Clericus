@@ -1,5 +1,5 @@
 
-from datetime import datetime
+from datetime import datetime, timezone
 import uuid
 from typing import List, Dict, Any, Optional
 import json
@@ -75,8 +75,8 @@ class QuestionTracker:
             "question_text": question_text,
             "status": "open",
             "answers": [],  # list of {source_type, snippet, citation, timestamp}
-            "created_at": datetime.utcnow(),
-            "updated_at": datetime.utcnow()
+            "created_at": datetime.now(timezone.utc),
+            "updated_at": datetime.now(timezone.utc)
         }
         self.questions[qid] = entry
         self._persist()
@@ -93,11 +93,11 @@ class QuestionTracker:
             "source_type": source_type,
             "snippet": snippet,
             "citation": citation,
-            "timestamp": datetime.utcnow()
+            "timestamp": datetime.now(timezone.utc)
         }
         entry.setdefault('answers', []).append(answer)
         entry['status'] = 'answered'
-        entry['updated_at'] = datetime.utcnow()
+        entry['updated_at'] = datetime.now(timezone.utc)
         self._persist()
 
     def get_open_questions(self, level: Optional[str] = None, section_path: Optional[str] = None) -> List[Dict[str, Any]]:
@@ -125,7 +125,7 @@ class QuestionTracker:
         if not entry:
             return
         entry['status'] = 'deferred'
-        entry['updated_at'] = datetime.utcnow()
+        entry['updated_at'] = datetime.now(timezone.utc)
         self._persist()
 
     def get_all(self) -> List[Dict[str, Any]]:
