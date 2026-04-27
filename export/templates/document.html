@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ document.title }}</title>
+  <style>
+    /* ── Base ───────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Georgia", "Times New Roman", serif;
+      font-size: 11pt;
+      line-height: 1.65;
+      color: #1a1a1a;
+      background: #fff;
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 48px 56px;
+    }
+
+    /* ── Cover ──────────────────────────────────────────────── */
+    .doc-title {
+      font-size: 26pt;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      line-height: 1.2;
+      margin-bottom: 12px;
+      color: #111;
+    }
+    .doc-opening {
+      font-size: 12pt;
+      color: #444;
+      margin-bottom: 36px;
+      border-left: 3px solid #c8a45e;
+      padding-left: 14px;
+      font-style: italic;
+    }
+    .doc-meta {
+      font-size: 9pt;
+      color: #888;
+      margin-bottom: 48px;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 16px;
+    }
+
+    /* ── Section headings ───────────────────────────────────── */
+    h1, h2, h3, h4, h5, h6 {
+      font-family: "Arial", "Helvetica Neue", sans-serif;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin-top: 2em;
+      margin-bottom: 0.5em;
+      line-height: 1.25;
+    }
+    h1 { font-size: 18pt; border-bottom: 2px solid #c8a45e; padding-bottom: 6px; }
+    h2 { font-size: 14pt; border-bottom: 1px solid #e0e0e0; padding-bottom: 4px; }
+    h3 { font-size: 12pt; color: #333; }
+    h4 { font-size: 11pt; color: #444; font-style: italic; }
+    h5, h6 { font-size: 10.5pt; color: #555; }
+
+    /* ── Body text ──────────────────────────────────────────── */
+    p {
+      margin-bottom: 0.9em;
+      text-align: justify;
+      hyphens: auto;
+    }
+    .section-opening {
+      font-weight: 500;
+      color: #222;
+    }
+    .section-closing {
+      color: #555;
+      font-style: italic;
+      margin-top: 1em;
+    }
+
+    /* ── Nested sections ────────────────────────────────────── */
+    .section { margin-bottom: 2em; }
+    .section-body { margin-top: 0.6em; }
+
+    /* ── References ─────────────────────────────────────────── */
+    .references {
+      margin-top: 3em;
+      padding-top: 1.2em;
+      border-top: 2px solid #c8a45e;
+    }
+    .references h2 {
+      border-bottom: none;
+      font-size: 14pt;
+      margin-top: 0;
+    }
+    .references ol {
+      padding-left: 1.4em;
+      margin-top: 0.6em;
+    }
+    .references li {
+      font-size: 9.5pt;
+      margin-bottom: 0.4em;
+      color: #333;
+      line-height: 1.5;
+    }
+
+    /* ── Print / PDF ────────────────────────────────────────── */
+    @media print {
+      body { padding: 0; max-width: 100%; font-size: 10.5pt; }
+      h1 { page-break-before: always; }
+      h1:first-of-type { page-break-before: avoid; }
+      .section { page-break-inside: avoid; }
+      .references { page-break-before: always; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Document header -->
+  <div class="doc-title">{{ document.title }}</div>
+  {% if document.openning %}
+  <div class="doc-opening">{{ document.openning }}</div>
+  {% endif %}
+
+  <!-- Recursive section renderer -->
+  {% macro render_section(node, depth) %}
+  <div class="section">
+    {% set tag = "h" ~ [depth, 6] | min %}
+    <{{ tag }}>{{ node.title }}</{{ tag }}>
+
+    {% if node.openning %}
+    <p class="section-opening">{{ node.openning }}</p>
+    {% endif %}
+
+    {% set body = node.body_text or node.body or "" %}
+    {% if body %}
+    <div class="section-body">
+      {% for para in body.split("\n\n") %}
+        {% if para.strip() %}<p>{{ para.strip() }}</p>{% endif %}
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if node.children %}
+      {% for child in node.children %}
+        {{ render_section(child, depth + 1) }}
+      {% endfor %}
+    {% endif %}
+
+    {% if node.closing %}
+    <p class="section-closing">{{ node.closing }}</p>
+    {% endif %}
+  </div>
+  {% endmacro %}
+
+  {% if document.children %}
+    {% for section in document.children %}
+      {{ render_section(section, 1) }}
+    {% endfor %}
+  {% else %}
+    {% set body = document.body_text or document.body or "" %}
+    {% if body %}
+      {% for para in body.split("\n\n") %}
+        {% if para.strip() %}<p>{{ para.strip() }}</p>{% endif %}
+      {% endfor %}
+    {% endif %}
+  {% endif %}
+
+  <!-- References -->
+  {% set all_refs = [] %}
+  {% if document.references %}{% for r in document.references %}{% if all_refs.append(r) %}{% endif %}{% endfor %}{% endif %}
+
+  {% macro collect_refs(node) %}
+    {% if node.references %}{% for r in node.references %}{% if all_refs.append(r) %}{% endif %}{% endfor %}{% endif %}
+    {% if node.children %}{% for child in node.children %}{{ collect_refs(child) }}{% endfor %}{% endif %}
+  {% endmacro %}
+  {% if document.children %}{% for s in document.children %}{{ collect_refs(s) }}{% endfor %}{% endif %}
+
+  {% if all_refs %}
+  <div class="references">
+    <h2>References</h2>
+    <ol>
+      {% for ref in all_refs %}
+      <li>
+        {% if ref is mapping %}
+          {{ ref.get("author", ref.get("source", "Unknown")) }}
+          ({{ ref.get("year", "n.d.") }}).
+          {% if ref.get("title") %}<em>{{ ref.title }}</em>.{% endif %}
+          {% if ref.get("filename") %}[{{ ref.filename }}]{% endif %}
+        {% else %}
+          {{ ref }}
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ol>
+  </div>
+  {% endif %}
+
+</body>
+</html>
